@@ -1,0 +1,12 @@
+<mujoco model='insole'>
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1="1 1 1" rgb2=".6 .8 1"
+                width="256"  height=256/>
+        <texture name="sample text" type="cube" builtin="flat" mark="cross" width="128" height="128"
+        rgb1="0.6 0.6 0.6" rgb2="0.6 0.6 0.6" markrgb="1 1 1"/>
+        <material  name='red' texture="sample_text" textuniform="true" rgba="1.0 0 0 1" />
+        <material  name='green' texture="sample_text" textuniform="true" rgba="0 1.0 0 1" />
+    </asset>
+<worldbody>
+
+</mujoco>
