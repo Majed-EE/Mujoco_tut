@@ -1,23 +1,39 @@
 <mujoco model="plane_and_cube">
     <compiler angle="radian" />
-    <option timestep="0.01" />
+    <option timestep="0.01" gravity="0 0 0" />
 
     <!-- The world body -->
     <worldbody>
+        <!-- Light source -->
+        <light name="main_light" pos="0 0 1" dir="0 0 -1" diffuse="1 1 1" specular="0.1 0.1 0.1" />
         <!-- World frame -->
-        <frame name="world_frame" pos="0 0 0" euler="0 0 0" />
+        <frame name="world_frame" pos="0 0 0" euler="0 0 0" />we
 
         <!-- The ground plane -->
         <geom name="ground" type="plane" size="5 5 0.1" rgba="0.9 0.9 0.9 1" />
 
         <!-- The cube -->
         <body name="cube" pos="0 0 0.1">
-            <geom name="cube_geom" type="box" size="0.1 0.1 0.1" rgba="0.8 0.1 0.1 1" />
+            <geom name="cube_geom" type="box" size="0.1 0.2 0.1" rgba="0.8 0.1 0.1 1" />
             <joint name="cube_free" type="free" />
         </body>
 
-        <!-- Light source -->
-        <light name="main_light" pos="0 0 3" dir="0 0 -1" diffuse="1 1 1" specular="0.1 0.1 0.1" />
+        <!-- The cube2 -->
+        <body name="cube_green" pos="0 0 0.5" euler="0 0 0">
+            <geom name="cube_geom_green" type="box" size="0.2 0.1 0.1" rgba="0.1 0.8 0.1 1" />
+            <joint name="cube_free_Green" type="free" />
+        </body>
+
+
+        <!-- The Sphere -->
+          <body name="sphere" pos="0 0 1" >
+            <geom name="sphere_geom" type="sphere" size="0.1" rgba="0.1 0.1 0.8 1" />
+            <joint name="sphere_free_Green" type="free" />
+        </body>
+
+
+
+     
     </worldbody>
 
     <!-- Actuator and sensor definitions (optional) -->

@@ -3,7 +3,18 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
-xml_path = 'manipulator.xml' #xml file (assumes this is in the same folder as this file)
+
+
+###
+"""
+data.qpos=q0; data.qpos[1]=q1 #set position
+mj_forward(model,data) # forward kinematics
+data.site_xpos[0] #get site position
+
+
+"""
+####
+xml_path = 'manipul.xml' #xml file (assumes this is in the same folder as this file)
 simend = 20 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
                         #this is useful for initializing view of the model)
