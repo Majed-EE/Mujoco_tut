@@ -1,4 +1,5 @@
-<mujoco><extension>
+<mujoco>
+<extension>
     <plugin plugin="mujoco.elasticity.cable"/>
  </extension>
  

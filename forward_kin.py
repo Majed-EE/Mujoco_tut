@@ -14,7 +14,7 @@ data.site_xpos[0] #get site position
 
 """
 ####
-xml_path = 'manipul.xml' #xml file (assumes this is in the same folder as this file)
+xml_path = 'manipulator.xml' #xml file (assumes this is in the same folder as this file)
 simend = 20 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
                         #this is useful for initializing view of the model)
@@ -25,7 +25,9 @@ button_middle = False
 button_right = False
 lastx = 0
 lasty = 0
+
 print("hi")
+
 def init_controller(model,data):
     #initialize the controller here. This function is called once, in the beginning
     pass
@@ -146,7 +148,9 @@ mj.set_mjcb_control(controller)
 #initial manipulator config
 N = 500
 q0_start = 0; # starting angle
-q0_end = 1.57; # edding angle
+import math
+
+q0_end = 1.57; # edding angle #90 degrees
 q1_start = 0;
 q1_end = -2*3.14;
 q0 = np.linspace(q0_start,q0_end,N)
@@ -171,7 +175,8 @@ while not glfw.window_should_close(window):
 
     i +=1
 
-    print(data.site_xpos[0])
+    # print(data.site_xpos[0]) # end effector position using site
+    # print(data.geom_xpos)
     
     if (i>=N):
         break;
