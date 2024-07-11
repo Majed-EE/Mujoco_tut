@@ -2,20 +2,12 @@ import mujoco as mj
 from mujoco.glfw import glfw
 import numpy as np
 import os
-from scipy.spatial.transform import Rotation as R
 
-xml_path = 'car.xml' #xml file (assumes this is in the same folder as this file)
+xml_path = 'drag.xml' #xml file (assumes this is in the same folder as this file)
 simend = 10 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
                         #this is useful for initializing view of the model)
 
-
-#data.strl #Set target velocity
-# mj_step(model,data) #Dynamic simulation
-# data.qpos, data.site_xpos  #Query dof/site  
-# #
-
-# qpos gives degree of freedom= joint angle of a body-- Frist 7 corresponds to Free joint (x,y,z) + 4 quaternion-- 
 # For callback functions
 button_left = False
 button_middle = False
@@ -23,27 +15,31 @@ button_right = False
 lastx = 0
 lasty = 0
 
-
-def quat2euler(quat_mujoco):
-    #mujocoy quat is constant,x,y,z,
-    #scipy quaut is x,y,z,constant
-    quat_scipy = np.array([quat_mujoco[3],quat_mujoco[0],quat_mujoco[1],quat_mujoco[2]])
-
-    r = R.from_quat(quat_scipy)
-    euler = r.as_euler('xyz', degrees=True)
-
-    return euler
-
 def init_controller(model,data):
     #initialize the controller here. This function is called once, in the beginning
     pass
 
 def controller(model, data):
     #put the controller here. This function is called inside the simulation.
-    # pass
-    # for actuator 
-    data.ctrl[0] = 10; # nu x 1 is the size of crtl, wehre nu is the number of actuator
-    data.ctrl[1] = 0;
+    # Force= -c*vx*|v| i + -c*vy*|v| j + -c*vz*|v| k 
+    vx = data.qvel[0]
+    vy = data.qvel[3]
+    vz = data.qvel[2]
+    v=np.sqrt(vx**2 + vy**2 + vz**2)
+    c=0.1
+
+    # data.qfrc_applied[0]=-c*vx*v
+    # data.qfrc_applied[1]=-c*vy*v
+    # data.qfrc_applied[2]=-c*vz*v
+    
+    # body wise force
+
+    # data.xfrc_applied[0][0]=-c*vx*v
+    # data.xfrc_applied[0][1]=-c*vy*v
+    # data.xfrc_applied[0][2]=-c*vz*v
+    
+
+    pass
 
 def keyboard(window, key, scancode, act, mods):
     if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
@@ -149,34 +145,30 @@ glfw.set_scroll_callback(window, scroll)
 # cam.elevation = -45
 # cam.distance = 2
 # cam.lookat = np.array([0.0, 0.0, 0])
-cam.azimuth = 90 ; cam.elevation = -45 ; cam.distance =  13
-cam.lookat =np.array([ 0.0 , 0.0 , 0.0 ])
+cam.azimuth = 90
+cam.elevation = -50
+cam.distance = 3
+cam.lookat = np.array([0.0, 0.0, 0])
 
 #initialize the controller
 init_controller(model,data)
+# set initial positions
+# x y z positions and quaternion 
+data.qpos[0]=0
+data.qpos[1]=0.1
+data.qpos[2]=0
+# qvel in x y z directions and wz wy wz direction
+data.qvel[0]=.5
+data.qvel[2]=.5
 
 #set the controller
 mj.set_mjcb_control(controller)
-
-
-## Main loop in which it runs
 
 while not glfw.window_should_close(window):
     time_prev = data.time
 
     while (data.time - time_prev < 1.0/60.0):
-        mj.mj_step(model, data) # every step, calls the controller, gets the value
-
-   #x y z position of the free joint
-    # print(data.qpos[0])
-    # print(data.qpos[1])
-    # print(data.qpos[2])
-
-    quat = np.array([data.qpos[3],data.qpos[4],data.qpos[5],data.qpos[6]])
-    euler = quat2euler(quat)
-    # print('yaw = ',euler[2]);
-
-    print(data.site_xpos[0]);
+        mj.mj_step(model, data)
 
     if (data.time>=simend):
         break;

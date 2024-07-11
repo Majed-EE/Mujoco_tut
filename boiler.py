@@ -3,8 +3,8 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
-xml_path = 'hello.xml' #xml file (assumes this is in the same folder as this file)
-simend = 5 #simulation time
+xml_path = 'drag.xml' #xml file (assumes this is in the same folder as this file)
+simend = 100 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
                         #this is useful for initializing view of the model)
 
@@ -127,6 +127,10 @@ glfw.set_scroll_callback(window, scroll)
 # cam.elevation = -45
 # cam.distance = 2
 # cam.lookat = np.array([0.0, 0.0, 0])
+cam.azimuth = 90
+cam.elevation = -50
+cam.distance = 3
+cam.lookat = np.array([0.0, 0.0, 0])
 
 #initialize the controller
 init_controller(model,data)
