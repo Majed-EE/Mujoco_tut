@@ -2,22 +2,19 @@ import mujoco as mj
 from mujoco.glfw import glfw
 import numpy as np
 import os
+from scipy.spatial.transform import Rotation as R
 
-
-
-###
-"""
-data.qpos=q0; data.qpos[1]=q1 #set position
-mj_forward(model,data) # forward kinematics
-data.site_xpos[0] #get site position
-
-
-"""
-####
-xml_path = 'manipulator.xml' #xml file (assumes this is in the same folder as this file)
-simend = 20 #simulation time
+xml_path = 'car.xml' #xml file (assumes this is in the same folder as this file)
+simend = 10 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
                         #this is useful for initializing view of the model)
+
+
+#data.strl #Set target velocity
+# mj_step(model,data) #Dynamic simulation
+# data.qpos, data.site_xpos  #Query dof/site  
+# #
+
 
 # For callback functions
 button_left = False
@@ -26,7 +23,16 @@ button_right = False
 lastx = 0
 lasty = 0
 
-print("hi")
+
+def quat2euler(quat_mujoco):
+    #mujocoy quat is constant,x,y,z,
+    #scipy quaut is x,y,z,constant
+    quat_scipy = np.array([quat_mujoco[3],quat_mujoco[0],quat_mujoco[1],quat_mujoco[2]])
+
+    r = R.from_quat(quat_scipy)
+    euler = r.as_euler('xyz', degrees=True)
+
+    return euler
 
 def init_controller(model,data):
     #initialize the controller here. This function is called once, in the beginning
@@ -34,7 +40,10 @@ def init_controller(model,data):
 
 def controller(model, data):
     #put the controller here. This function is called inside the simulation.
-    pass
+    # pass
+    # for actuator 
+    data.ctrl[0] = 10;
+    data.ctrl[1] = 0;
 
 def keyboard(window, key, scancode, act, mods):
     if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
@@ -136,8 +145,11 @@ glfw.set_mouse_button_callback(window, mouse_button)
 glfw.set_scroll_callback(window, scroll)
 
 # Example on how to set camera configuration
-#initialize the controller here. This function is called once, in the beginning
-cam.azimuth = 89.83044433593757 ; cam.elevation = -89.0 ; cam.distance =  5.04038754800176
+# cam.azimuth = 90
+# cam.elevation = -45
+# cam.distance = 2
+# cam.lookat = np.array([0.0, 0.0, 0])
+cam.azimuth = 90 ; cam.elevation = -45 ; cam.distance =  13
 cam.lookat =np.array([ 0.0 , 0.0 , 0.0 ])
 
 #initialize the controller
@@ -145,43 +157,29 @@ init_controller(model,data)
 
 #set the controller
 mj.set_mjcb_control(controller)
-#initial manipulator config
-N = 500
-q0_start = 0; # starting angle
-import math
 
-q0_end = 1.57; # edding angle #90 degrees
-q1_start = 0;
-q1_end = -2*3.14;
-q0 = np.linspace(q0_start,q0_end,N)
-q1 = np.linspace(q1_start,q1_end,N)
 
-#initialize
-data.qpos[0] = q0_start;
-data.qpos[1] = q1_start
-i = 0;
-time = 0
-dt = 0.001;
+## Main loop in which it runs
 
 while not glfw.window_should_close(window):
-    time_prev = time
+    time_prev = data.time
 
-    while (time - time_prev < 1.0/60.0):
-        data.qpos[0] = q0[i];
-        data.qpos[1] = q1[i];
-        mj.mj_forward(model,data)
-        time +=dt
-        # mj.mj_step(model, data)
+    while (data.time - time_prev < 1.0/60.0):
+        mj.mj_step(model, data) # every step, calls the controller, gets the value
 
-    i +=1
-    print(data.qpos)
-    # print(data.site_xpos[0]) # end effector position using site
-    # print(data.geom_xpos)
-    
-    if (i>=N):
+   #x y z position of the free joint
+    # print(data.qpos[0])
+    # print(data.qpos[1])
+    # print(data.qpos[2])
+
+    quat = np.array([data.qpos[3],data.qpos[4],data.qpos[5],data.qpos[6]])
+    euler = quat2euler(quat)
+    # print('yaw = ',euler[2]);
+
+    print(data.site_xpos[0]);
+
+    if (data.time>=simend):
         break;
-    # if (data.time>=simend):
-    #     break;
 
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(

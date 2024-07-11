@@ -1,0 +1,49 @@
+<mujoco model="plane_and_cube">
+    <!-- <compiler angle="degrees" /> -->
+    <option gravity="0 0 -9.8" />
+
+    <!-- The world body -->
+    <worldbody>
+        <!-- Light source -->
+        <light name="main_light" pos="0 0 10.8" dir="0 0 -1" diffuse=".5 .5 .5" specular="0.1 0.1 0.1" />
+        <!-- World frame -->
+        <frame name="world_frame" pos="0 0 0.1" euler="0 0 0" />
+
+        <!-- The ground plane -->
+        <geom name="ground" type="plane" size="5 5 0.1" rgba="0.9 0.9 0.9 1" />
+
+        <body name="chassis" pos="0 0 0.2" euler="0 90 0">
+            <joint type="free"/>
+            <geom type="box" size=".05 .2 .5" rgba="0.9 .9 0 1" />
+            <site name="marker" pos="0 0 0" size="0.1" />
+
+            <!-- length, radius to define cylnder. length, breadth and height for cuboid-->
+            <body name="left-tire" pos="0 0.3 -0.5" euler="90 0 0">
+                <joint name="left-wheel" type="hinge" axis="0 0 -1"/>
+                <geom type="cylinder" size=".2 .05" rgba="0 .9 0 1" />
+            </body>
+            
+            <body name="right-tire" pos="0 -0.3 -0.5" euler="90 0 0">
+                <joint name="right-wheel" type="hinge" axis="0 0 -1"/>
+                <geom type="cylinder" size=".2 .05" rgba="0 .9 0 1" />
+            </body>
+
+        
+
+        </body>
+
+
+    </worldbody>
+
+    <!-- Actuator and sensor definitions (optional) -->
+    <actuator>
+        <velocity name="left-velocity-servo" joint="left-wheel" kv="100"/>
+        <velocity name="right-velocity-servo" joint="right-wheel" kv="100"/>
+        <!-- Define any actuators here -->
+    </actuator>
+
+    <sensor>
+        <!-- Define any sensors here -->
+         <framepos objtype="site" objname="marker"/>
+    </sensor>
+</mujoco>
