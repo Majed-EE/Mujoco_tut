@@ -3,7 +3,7 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
-xml_path = 'arh_soft_scene1.xml' #xml file (assumes this is in the same folder as this file)
+xml_path = 'left_hand.xml' #xml file (assumes this is in the same folder as this file)
 simend = 100 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
                         #this is useful for initializing view of the model)
@@ -144,9 +144,13 @@ while not glfw.window_should_close(window):
     while (data.time - time_prev < 1.0/60.0):
         mj.mj_step(model, data)
 
-    if (data.time>=simend):
-        break;
-
+ 
+    
+        
+        joint_torques = np.copy(data.qfrc_actuator)
+        joint_angles = np.copy(data.qpos)
+        print("Joint Angles:", len(joint_angles))
+        print("Joint Torques:", len(joint_torques))
     # get framebuffer viewport
     viewport_width, viewport_height = glfw.get_framebuffer_size(
         window)

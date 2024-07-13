@@ -33,15 +33,16 @@ def controller(model, data):
     # data.qfrc_applied[2]=-c*vz*v
     
     # body wise force
-
-    # data.xfrc_applied[0][0]=-c*vx*v
-    # data.xfrc_applied[0][1]=-c*vy*v
-    # data.xfrc_applied[0][2]=-c*vz*v
+    # body [0] is the world
+    data.xfrc_applied[0][0]=-c*vx*v
+    data.xfrc_applied[0][1]=-c*vy*v
+    data.xfrc_applied[0][2]=-c*vz*v
     
 
     pass
 
 def keyboard(window, key, scancode, act, mods):
+    # reset the simulation
     if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
         mj.mj_resetData(model, data)
         mj.mj_forward(model, data)
