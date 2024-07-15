@@ -4,12 +4,13 @@ import numpy as np
 import time as T
 import math
 import xml.etree.ElementTree as ET
-xml_path = 'arh_soft_scene1.xml' #xml file (assumes this is in the same folder as this file)
+xml_path = 'left_hand_light.xml' #xml file (assumes this is in the same folder as this file)
 # simend = 100 #simulation time
 print_camera_config = 0
 model = mj.MjModel.from_xml_path(xml_path)
 data = mj.MjData(model)
 
+global body_dict
 
 N = 500
 simend=N
@@ -44,8 +45,8 @@ for body in root.findall('.//body'):
         joint_flag=False
             
         body_id+=1
-
-for key, value in enumerate(body_dict):
+# print(body_dict)
+for key in body_dict.keys():
     if "joint_name" in body_dict[key]:
         # print(body_dict[key]["joint_name"])
         actuator_name=body_dict[key]["joint_name"].replace('j', 'a')
@@ -65,7 +66,7 @@ def actuator_key(act_name):
             # print(index)
             return index
         
-for key,value in enumerate(body_dict):
+for key in body_dict.keys():
     if 'actuator_name' in body_dict[key].keys():
         # print(body_dict[key]['actuator_name'])        
         ind=actuator_key(body_dict[key]['actuator_name'])
@@ -74,7 +75,7 @@ for key,value in enumerate(body_dict):
         body_dict[key]['joint_id']=actuator_list[ind][2]
 
 
-
+print(body_dict)
 
 
 
@@ -103,21 +104,31 @@ def setPositionControl(joint_id,angle):
 
  
 
-joint_id=6
-q=setPositionControl(joint_id,80)
+# joint_id=6
+# q=setPositionControl(joint_id,80)
+
+
+
+# def positionControlArray(list_joint_id,list_target_angle):
+#     pass
+
 
 
 
 def positionControlArray(list_joint_id,list_target_angle):
-    pass
+    if len(list_joint_id)==len(list_target_angle):
+        for joint_id in range (len(list_joint_id)):
+            set_position_servo(list_joint_id[joint_id],list_target_angle[joint_id])
 
-
-def set_position_servo(actuator_no,bend_angle,kp=10):
+def set_position_servo(joint_id,bend_angle):
     
-    model.actuator_gainprm[actuator_no,0]=kp
-    model.actuator_biasprm[actuator_no,1]=-kp
-    data.ctrl=math.radians(bend_angle)
-
+    # model.actuator_gainprm[actuator_no,0]=kp
+    # model.actuator_biasprm[actuator_no,1]=-kp
+    print(f"joint id {joint_id}")
+    print(joint_id)
+    data.ctrl[joint_id]=math.radians(bend_angle)
+    print("ctrl matrix")
+    # print(data.ctrl)
 
 
 
@@ -133,13 +144,37 @@ def actuator_name2id(actuator_name):
 
 
 
+def joint_name2id(joint_name):
+    joint_id=None
+    global body_dict
+    print("global body dict")
+
+    print(body_dict)
+    print("global")
+    print("in joint_name2id block")
+    for key in body_dict.keys():
+         print(key)
+         body_dict[key]
+         if "joint_name" in body_dict[key]:
+            if body_dict[key]["joint_name"]==joint_name:
+            # actuator_name=body_dict[key]["joint_name"].replace('j', 'a')
+                joint_id=body_dict[key]["joint_id"]
+                return joint_id
 
 
 def controller(model,data):
     # spring like behaviour
-    actuator_name="ffa1"
-    actuator_id=actuator_name2id(actuator_name)
-    set_position_servo(actuator_id,90)
+    joint_name_list=["ffj1","rfj1"]
+    target_bend=45
+    target_bend_list=[45,45]
+    joint_id_list=[]
+    for joint_name in range(len(joint_name_list)):
+
+        joint_id=joint_name2id(joint_name_list[joint_name])
+        joint_id_list.append(joint_id)
+    # print(f"return joint id is {joint_id}")
+    # print(joint_id)
+    positionControlArray(joint_id_list,target_bend_list)
 
 
 
@@ -184,9 +219,10 @@ cam2.lookat = np.array([0.0, 0.0, 0.0])
 
 
 
-joint_id=13
+# joint_id=13
 
-# while not glfw.window_should_close(window):
+
+# # while not glfw.window_should_close(window):
 for x in range(simend):
  
     step_start = T.time()
@@ -196,11 +232,11 @@ for x in range(simend):
     # data.qpos[joint_id] = q[x];
     # data.qpos[1] = q1[i];
 
-    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
-    print(f"angle {math.degrees(joint_angles[joint_id])}")
+    # print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    # print(f"angle {math.degrees(joint_angles[joint_id])}")
     
-    # print(f"torque {joint_torques[joint_id]}")
-    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    # # print(f"torque {joint_torques[joint_id]}")
+    # print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
 
     viewport1 = mj.MjrRect(0, 0, 600, 900)
