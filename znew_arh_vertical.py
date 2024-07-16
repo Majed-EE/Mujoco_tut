@@ -7,17 +7,17 @@ import xml.etree.ElementTree as ET
 from matplotlib import pyplot as plt
 import json
 # import cv2
+scene_no=1
+scene_xml=["vertical_arh_soft_scene.xml","vertical_arh_sphere_scene.xml"]
 
-
-
-xml_path = "arh_sphere_scene1.xml"  #"arh_soft_scene1.xml"   #"arh_sphere_scene1.xml"   #"left_hand_light.xml"   #"arh_sphere_scene1.xml"  #"arh_soft_scene1.xml"    #'left_hand_light_with_cube.xml'#"arh_soft_scene1.xml"   #'left_hand_light.xml' #xml file (assumes this is in the same folder as this file)
+xml_path = scene_xml[scene_no]#"vertical_arh_soft_scene.xml"  #"arh_soft_scene1.xml"   #"arh_sphere_scene1.xml"   #"left_hand_light.xml"   #"arh_sphere_scene1.xml"  #"arh_soft_scene1.xml"    #'left_hand_light_with_cube.xml'#"arh_soft_scene1.xml"   #'left_hand_light.xml' #xml file (assumes this is in the same folder as this file)
 # simend = 100 #simulation time
 N = 400
 print_camera_config = 0
 model = mj.MjModel.from_xml_path(xml_path)
 data = mj.MjData(model)
 
-global body_dict
+global body_dict, all_axis
 
 global finger_0,finger_1,finger_2,finger_3,open
 finger_0=['rfj0', 'rfj1', 'rfj2', 'rfj3']
@@ -134,6 +134,7 @@ def getTipInfo():
                 tip_id.append(body_id)
     return tip_id
 
+print("tip body name and id")
 tip_list=getTipInfo()
 
 # print("applied force")
@@ -187,11 +188,7 @@ def getBodyInfo():
 
 
 
-# getJointInfo()
-
-
-# getBodyInfo()
-# print(body_dict)
+######################### Mapping Variables ############################### 
 
 
 
@@ -199,7 +196,7 @@ def getBodyInfo():
 
 
 
-
+######################### Control Variables ################################
 
 def setPositionControl(joint_id,angle):
     q_start = 0
@@ -211,16 +208,6 @@ def setPositionControl(joint_id,angle):
 
 
  
-
-# joint_id=6
-# q=setPositionControl(joint_id,80)
-
-
-
-# def positionControlArray(list_joint_id,list_target_angle):
-#     pass
-
-
 
 
 def positionControlArray(list_joint_id,list_target_angle):
@@ -314,7 +301,7 @@ def controller(model,data):
 
     if open:
 
-        joint_name_list=finger_0a+finger_1a+finger_2a+finger_3
+        joint_name_list=finger_1a[:2] #finger_0a+finger_1a+finger_2a+finger_3
         # joint_name_list,_=getJointInfo() # ['rfj0', 'rfj1',
         # 'rfj2', 'rfj3', 'mfj0', 'mfj1', 'mfj2', 'mfj3', 'ffj0', 'ffj1', 'ffj2', 'ffj3', 'thj0', 'thj1', 'thj2', 'thj3']
         target_bend_list_radian=[0.824,1.16,0.865,0.496] #[90,90,90,90]#[0.824,1.16,0.865,0.496]
@@ -322,7 +309,7 @@ def controller(model,data):
 
             
         target_bend_list_thumb=[math.degrees(x) for x in target_bend_list_radian ]
-        target_bend_list=[80]*(len(finger_2a)*3) +target_bend_list_thumb
+        target_bend_list=[90]*(len(joint_name_list)*1) #+target_bend_list_thumb
         # print(target_bend_list)
         joint_id_list=[]
         for joint_name in range(len(joint_name_list)):
@@ -362,10 +349,102 @@ def controller(model,data):
 
 
 
+
+
 #set the controller
 mj.set_mjcb_control(controller)
 
+############################################ Controller Varables #################################################
 
+
+
+
+
+
+
+################################################ Camera Position Orientation #############################333
+
+def keyboard(window, key, scancode, act, mods):
+    if act == glfw.PRESS and key == glfw.KEY_BACKSPACE:
+        mj.mj_resetData(model, data)
+        mj.mj_forward(model, data)
+
+def mouse_button(window, button, act, mods):
+    # update button state
+    global button_left
+    global button_middle
+    global button_right
+
+    button_left = (glfw.get_mouse_button(
+        window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS)
+    button_middle = (glfw.get_mouse_button(
+        window, glfw.MOUSE_BUTTON_MIDDLE) == glfw.PRESS)
+    button_right = (glfw.get_mouse_button(
+        window, glfw.MOUSE_BUTTON_RIGHT) == glfw.PRESS)
+
+    # update mouse position
+    glfw.get_cursor_pos(window)
+
+def mouse_move(window, xpos, ypos):
+    # compute mouse displacement, save
+    global lastx
+    global lasty
+    global button_left
+    global button_middle
+    global button_right
+
+    dx = xpos - lastx
+    dy = ypos - lasty
+    lastx = xpos
+    lasty = ypos
+
+    # no buttons down: nothing to do
+    if (not button_left) and (not button_middle) and (not button_right):
+        return
+
+    # get current window size
+    width, height = glfw.get_window_size(window)
+
+    # get shift key state
+    PRESS_LEFT_SHIFT = glfw.get_key(
+        window, glfw.KEY_LEFT_SHIFT) == glfw.PRESS
+    PRESS_RIGHT_SHIFT = glfw.get_key(
+        window, glfw.KEY_RIGHT_SHIFT) == glfw.PRESS
+    mod_shift = (PRESS_LEFT_SHIFT or PRESS_RIGHT_SHIFT)
+
+    # determine action based on mouse button
+    if button_right:
+        if mod_shift:
+            action = mj.mjtMouse.mjMOUSE_MOVE_H
+        else:
+            action = mj.mjtMouse.mjMOUSE_MOVE_V
+    elif button_left:
+        if mod_shift:
+            action = mj.mjtMouse.mjMOUSE_ROTATE_H
+        else:
+            action = mj.mjtMouse.mjMOUSE_ROTATE_V
+    else:
+        action = mj.mjtMouse.mjMOUSE_ZOOM
+
+    mj.mjv_moveCamera(model, action, dx/height,
+                      dy/height, scene, cam)
+
+def scroll(window, xoffset, yoffset):
+    action = mj.mjtMouse.mjMOUSE_ZOOM
+    mj.mjv_moveCamera(model, action, 0.0, -0.05 *
+                      yoffset, scene, cam)
+
+
+
+
+
+########################################## Camera Variables Start #####################################################
+# For callback functions
+button_left = False
+button_middle = False
+button_right = False
+lastx = 0
+lasty = 0
 
 if not glfw.init():
     raise Exception("GLFW can't be initialized")
@@ -380,28 +459,41 @@ glfw.swap_interval(1)
 
 
 cam = mj.MjvCamera()
-cam2 = mj.MjvCamera()
+# cam2 = mj.MjvCamera()
 opt = mj.MjvOption()
 scene = mj.MjvScene(model, maxgeom=10000)
 context = mj.MjrContext(model, mj.mjtFontScale.mjFONTSCALE_150)
 
 
-mj.mjv_defaultFreeCamera(model, cam)
-mj.mjv_defaultFreeCamera(model, cam2)
+mj.mjv_defaultCamera(cam) ## change to default free camera for multiple camera mount
+# mj.mjv_defaultFreeCamera(model, cam2)
 mj.mjv_defaultOption(opt)
+scene = mj.MjvScene(model, maxgeom=10000)
+context = mj.MjrContext(model, mj.mjtFontScale.mjFONTSCALE_150.value)
 
-
-cam.azimuth = 90
-cam.elevation = -50
-cam.distance = 3
+cam.azimuth = 85
+cam.elevation = 0.4
+cam.distance = 0.6
 cam.lookat = np.array([0.0, 0.0, 0.0])
 
-cam2.azimuth = 270
-cam2.elevation = -50
-cam2.distance = 4
-cam2.lookat = np.array([0.0, 0.0, 0.0])
+# cam.azimuth = 84.79999999999995 ; cam.elevation = 0.39999999999994823 ; cam.distance =  0.5520500437097977
+# cam.lookat =np.array([ 0.0 , 0.0 , 0.0 ])
 
 
+# cam2.azimuth = 270
+# cam2.elevation = -50
+# cam2.distance = 4
+# cam2.lookat = np.array([0.0, 0.0, 0.0])
+
+# install GLFW mouse and keyboard callbacks
+glfw.set_key_callback(window, keyboard)
+glfw.set_cursor_pos_callback(window, mouse_move)
+glfw.set_mouse_button_callback(window, mouse_button)
+glfw.set_scroll_callback(window, scroll)
+
+
+
+############################################################ CAM context ################################################
 
 # joint_id=13
 
@@ -463,10 +555,7 @@ for x in range(simend):
     
 
         # Get contact forces
-        ncon = data.ncon
-        print(ncon)
-        contact_info = []
-
+  
         # for i in range(ncon):
         #     contact = data.contact[i]
         #     force = np.zeros(6)
@@ -475,21 +564,28 @@ for x in range(simend):
         #     print(f"{ncon} and \nforce: {force[:3]} ")
         #     contact_forces.append(force)
 
+    ncon = data.ncon
+    print(ncon)
+    contact_info = []
 
-        for i in range(ncon):
-            contact = data.contact[i]
-            body1 = model.geom_bodyid[contact.geom1]
-            body2 = model.geom_bodyid[contact.geom2]
-            force = np.zeros(6)
-            mj.mj_contactForce(model, data, i, force)
-            contact_info.append((body1, body2, force))
-            print(contact_info)
 
-        # Print the body IDs and contact forces
-        for i, (body1, body2, force) in enumerate(contact_info):
-            body1_name = mj.mj_id2name(model, mj.mjtObj.mjOBJ_BODY, body1)
-            body2_name = mj.mj_id2name(model, mj.mjtObj.mjOBJ_BODY, body2)
-            print(f"Contact {i}: Body1 = {body1_name}, Body2 = {body2_name}, Force = {force[:3]}, Torque = {force[3:]}")
+
+    for i in range(ncon):
+        contact = data.contact[i]
+        body1 = model.geom_bodyid[contact.geom1]
+        body2 = model.geom_bodyid[contact.geom2]
+        force = np.zeros(6)
+        mj.mj_contactForce(model, data, i, force)
+        contact_info.append((body1, body2, force))
+        print(contact_info)
+        
+
+    # Print the body IDs and contact forces
+    for i, (body1, body2, force) in enumerate(contact_info):
+        body1_name = mj.mj_id2name(model, mj.mjtObj.mjOBJ_BODY, body1)
+        body2_name = mj.mj_id2name(model, mj.mjtObj.mjOBJ_BODY, body2)
+        print(f"Contact {i}: Body1 = {body1_name}, Body2 = {body2_name}, Force = {force[:3]}, Torque = {force[3:]}")
+
 
 
 
@@ -510,15 +606,33 @@ for x in range(simend):
     # # print(f"torque {joint_torques[joint_id]}")
     # print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
 
-    width,height=600, 900
-    viewport1 = mj.MjrRect(0, 0, 600, 900)
-    mj.mjv_updateScene(model, data, opt, None, cam, mj.mjtCatBit.mjCAT_ALL, scene)
-    mj.mjr_render(viewport1, scene, context)
+
+    ############## camera scene buffer viewport etc setting ##############################33
+        # get framebuffer viewport
+    viewport_width, viewport_height = glfw.get_framebuffer_size(
+        window)
+    viewport = mj.MjrRect(0, 0, viewport_width, viewport_height)
+
+     #print camera configuration (help to initialize the view)
+    if (print_camera_config==1):
+        print('cam.azimuth =',cam.azimuth,';','cam.elevation =',cam.elevation,';','cam.distance = ',cam.distance)
+        print('cam.lookat =np.array([',cam.lookat[0],',',cam.lookat[1],',',cam.lookat[2],'])')
 
 
-    viewport2 = mj.MjrRect(600, 0, 600, 900)
-    mj.mjv_updateScene(model, data, opt, None, cam2, mj.mjtCatBit.mjCAT_ALL, scene)
-    mj.mjr_render(viewport2, scene, context)
+    mj.mjv_updateScene(model, data, opt, None, cam,
+                       mj.mjtCatBit.mjCAT_ALL.value, scene)
+    mj.mjr_render(viewport, scene, context)
+
+
+    # width,height=600, 900
+    # viewport1 = mj.MjrRect(0, 0, 600, 900)
+    # mj.mjv_updateScene(model, data, opt, None, cam, mj.mjtCatBit.mjCAT_ALL, scene)
+    # mj.mjr_render(viewport1, scene, context)
+
+
+    # viewport2 = mj.MjrRect(600, 0, 600, 900)
+    # mj.mjv_updateScene(model, data, opt, None, cam2, mj.mjtCatBit.mjCAT_ALL, scene)
+    # mj.mjr_render(viewport2, scene, context)
 
 #   # Read the frame from the renderer
 #     rgb = np.zeros((height, width, 3), dtype=np.uint8)
@@ -569,13 +683,37 @@ glfw.terminate()
 target_joint=[joint for joint in range (0,16)]
 target_joint_name=[joint_id2name(joint_id) for joint_id in target_joint]
 print(target_joint_name)
+
+
+
+def graph_plotter_joints(target_stack_array,attribute):
+    global all_axis,target_joint, target_joint_name
+
+    plt.figure(figsize=(10, 6))
+    for joint in range(len(target_joint)):
+        # print(torque_stack_array[0])
+
+        plt.plot(all_axis, target_stack_array[target_joint[joint]], linestyle='-',label=f'{attribute} for joint {target_joint_name[joint]}')
+
+
+        # plt.scatter(all_axis,  torque_stack_array[target_joint[joint]], color='r', label=f'Torque for joint {target_joint[joint]}')
+
+    plt.title(f'{attribute} of joints')
+    plt.xlabel('Steps')
+    plt.ylabel(f'{attribute}')
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()
+
 angle_stack_array=np.degrees(angle_stack_array.T)
-
-
 torque_stack_array=torque_stack_array.T
 finger_3
 # actuator_force_stack=actuator_force_stack.T
-check_np=check_np.T
+unconstrained_torque_stack=check_np.T
+graph_plotter_joints(angle_stack_array,"Angle")
+graph_plotter_joints(unconstrained_torque_stack, "Torque")
+
 
 # target_joint=[]
 # for joint_name in range(len(finger_3)):
@@ -627,23 +765,23 @@ check_np=check_np.T
 
 
 
-plt.figure(figsize=(10, 6))
-for joint in range(len(target_joint)):
-    # print(torque_stack_array[0])
+# plt.figure(figsize=(10, 6))
+# for joint in range(len(target_joint)):
+#     # print(torque_stack_array[0])
 
-    plt.plot(all_axis, check_np[target_joint[joint]], linestyle='-')#,label=f'Joint {target_joint_name[joint]}')
+#     plt.plot(all_axis, check_np[target_joint[joint]], linestyle='-')#,label=f'Joint {target_joint_name[joint]}')
 
 
-    # plt.scatter(all_axis,  torque_stack_array[target_joint[joint]], color='r', label=f'Torque for joint {target_joint[joint]}')
+#     # plt.scatter(all_axis,  torque_stack_array[target_joint[joint]], color='r', label=f'Torque for joint {target_joint[joint]}')
 
-plt.title('Torque at joints')
-plt.xlabel('Steps')
-plt.ylabel('Torque')
-plt.legend()
-plt.grid(True)
-# Save the plot as a PNG file
-plt.savefig('sample_plot.png')
-plt.show()
+# plt.title('Torque at joints')
+# plt.xlabel('Steps')
+# plt.ylabel('Torque')
+# plt.legend()
+# plt.grid(True)
+# # Save the plot as a PNG file
+# plt.savefig('sample_plot.png')
+# plt.show()
 
 
 
@@ -667,7 +805,7 @@ plt.show()
 #     image_path = f'frame_{i:04d}.png'
 #     Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).save(image_path)
 
-print(f'Video saved as {output_video_path}')
+# print(f'Video saved as {output_video_path}')
 
 
 
