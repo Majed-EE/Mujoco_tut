@@ -3,6 +3,8 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
+# Description: boiler code to test model
+
 xml_path = 'drag.xml' #xml file (assumes this is in the same folder as this file)
 simend = 100 #simulation time
 print_camera_config = 0 #set to 1 to print camera config

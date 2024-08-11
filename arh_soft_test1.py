@@ -3,6 +3,12 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
+
+# Description:
+# Display and print joint angles and torques for the left hand
+# Mostlly boiler
+# qfrdc data and qfrc pose
+
 xml_path = 'left_hand.xml' #xml file (assumes this is in the same folder as this file)
 simend = 100 #simulation time
 print_camera_config = 0 #set to 1 to print camera config
@@ -16,11 +22,11 @@ lastx = 0
 lasty = 0
 
 def init_controller(model,data):
-    #initialize the controller here. This function is called once, in the beginning
+    # Initialize the controller here. This function is called once, in the beginning
     pass
 
 def controller(model, data):
-    #put the controller here. This function is called inside the simulation.
+    # Put the controller here. This function is called inside the simulation.
     pass
 
 def keyboard(window, key, scancode, act, mods):

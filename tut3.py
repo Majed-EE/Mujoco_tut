@@ -3,6 +3,7 @@ import time
 import mujoco as mj
 import mujoco.viewer as mj_viewer
 model_path = r"wonik_allegro/left_hand.xml"
+# does nothing special
 
 m = mj.MjModel.from_xml_path(model_path)
 d = mj.MjData(m)

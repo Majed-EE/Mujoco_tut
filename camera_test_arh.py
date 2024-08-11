@@ -3,7 +3,7 @@ import mujoco.viewer
 import glfw
 
 # Load the MuJoCo model from the XML file
-model = mujoco.MjModel.from_xml_path('left_hand_light.xml')
+model = mujoco.MjModel.from_xml_path('left_hand.xml')
 data = mujoco.MjData(model)
 
 # Initialize GLFW to manage multiple windows

@@ -1,3 +1,6 @@
+# Description: 
+# Gives cfrc_ext, qpos and qfrc_actuator and plot- does not have actuation.
+
 model_path = r"arh_soft_scene1.xml"
 
 import mujoco

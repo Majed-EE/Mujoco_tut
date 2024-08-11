@@ -3,6 +3,7 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
+# Description: Followed from 
 xml_path = 'zdrag_new.xml' #xml file (assumes this is in the same folder as this file)
 simend = 5 #simulation time
 print_camera_config = 0 #set to 1 to print camera config

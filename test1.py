@@ -1,5 +1,7 @@
 model_path = r"wonik_allegro/left_hand.xml"
 
+# prints joint torques
+
 import mujoco
 import numpy as np
 import mujoco.viewer as mj_viewer

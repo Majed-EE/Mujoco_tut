@@ -3,6 +3,8 @@ from mujoco.glfw import glfw
 import numpy as np
 import os
 
+# followed from youtube tutorial
+
 xml_path = 'hello.xml' #xml file (assumes this is in the same folder as this file)
 simend = 5 #simulation time
 print_camera_config = 0 #set to 1 to print camera config

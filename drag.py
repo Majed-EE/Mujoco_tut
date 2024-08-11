@@ -2,6 +2,7 @@ import mujoco as mj
 from mujoco.glfw import glfw
 import numpy as np
 import os
+# From that youtube tutorial series
 
 xml_path = 'drag.xml' #xml file (assumes this is in the same folder as this file)
 simend = 10 #simulation time
